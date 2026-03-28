@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TermsGPT</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: #1a1a1a;
+      background: #f9f9f9;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 16px;
+      background: #1a1a2e;
+      color: #fff;
+    }
+
+    header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      font-size: 12px;
+      opacity: 0.65;
+      margin-top: 2px;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .status-card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+
+    .status-card .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    .status-card .value {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge.ok   { background: #d1fae5; color: #065f46; }
+    .badge.err  { background: #fee2e2; color: #991b1b; }
+    .badge.idle { background: #f3f4f6; color: #6b7280; }
+
+    .placeholder {
+      text-align: center;
+      color: #aaa;
+      margin-top: 32px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TermsGPT</h1>
+    <p>AI-powered Terms &amp; Conditions analyser</p>
+  </header>
+
+  <main>
+    <div class="status-card">
+      <div class="label">Extension Status</div>
+      <div class="value" id="ext-status">
+        <span class="badge idle">Loading…</span>
+      </div>
+    </div>
+
+    <div class="status-card">
+      <div class="label">Background Worker</div>
+      <div class="value" id="bg-status">
+        <span class="badge idle">Pinging…</span>
+      </div>
+    </div>
+
+    <div class="placeholder">
+      TermsGPT loading…<br />
+      <small>Open a webpage with Terms &amp; Conditions to get started.</small>
+    </div>
+  </main>
+
+  <script src="sidebar.js"></script>
+</body>
+</html>

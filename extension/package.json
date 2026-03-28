@@ -1,0 +1,18 @@
+{
+  "name": "ai-trip-planner",
+  "version": "1.0.0",
+  "description": "",
+  "main": "background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild content.js --bundle --outfile=dist/content.js --platform=browser --target=es2020"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "esbuild": "^0.18.0"
+  }
+}

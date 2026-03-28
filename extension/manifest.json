@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "TermsGPT",
+  "version": "0.1.0",
+  "description": "Extracts and analyses Terms & Conditions from any webpage using AI.",
+
+  "permissions": [
+    "sidePanel",
+    "activeTab",
+    "scripting"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["dist/content.js"]
+    }
+  ],
+
+  "side_panel": {
+    "default_path": "sidebar.html"
+  },
+
+  "action": {
+    "default_title": "Open TermsGPT"
+  }
+}
