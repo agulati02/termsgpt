@@ -1,5 +1,8 @@
 import uuid
 
+from dotenv import load_dotenv
+load_dotenv()  # must run before OpenAI client is imported
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,6 +13,14 @@ from models import (
     QueryRequest,
     QueryResponse,
     Citation,
+)
+from retrieval import (
+    build_bm25_index,
+    bm25_search,
+    embed_chunks,
+    embed_query,
+    reciprocal_rank_fusion,
+    vector_search,
 )
 import store
 
@@ -34,21 +45,42 @@ def health() -> dict:
 def ingest(body: IngestRequest) -> IngestResponse:
     doc_id = str(uuid.uuid4())
     chunks = chunk_by_sections(body.text, body.sections)
-    store.save(doc_id, {"text": body.text, "sections": body.sections, "chunks": chunks})
+
+    vectors = embed_chunks(chunks)
+    bm25_index = build_bm25_index(chunks)
+
+    store.save(doc_id, {
+        "text": body.text,
+        "sections": body.sections,
+        "chunks": chunks,
+        "vectors": vectors,
+        "bm25_index": bm25_index,
+    })
     return IngestResponse(doc_id=doc_id, chunk_count=len(chunks))
 
 
 @app.post("/query", response_model=QueryResponse)
 def query(body: QueryRequest) -> QueryResponse:
-    if not store.exists(body.doc_id):
-        raise HTTPException(status_code=404, detail=f"doc_id '{body.doc_id}' not found. Call /ingest first.")
-    # Stub response — real RAG logic added in Features 5-7.
-    return QueryResponse(
-        answer="[Stub] This is a placeholder answer. RAG pipeline not yet implemented.",
-        citations=[
-            Citation(
-                heading="Stub Section",
-                snippet="[Stub] Relevant snippet will appear here after Features 5-7 are implemented.",
-            )
-        ],
+    doc = store.get(body.doc_id)
+    if doc is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"doc_id '{body.doc_id}' not found. Call /ingest first.",
+        )
+
+    chunks = doc["chunks"]
+    vectors = doc["vectors"]
+    bm25_index = doc["bm25_index"]
+
+    query_vec = embed_query(body.query)
+    bm25_results = bm25_search(body.query, bm25_index, chunks)
+    vector_results = vector_search(query_vec, vectors, chunks)
+    top_chunks = reciprocal_rank_fusion(bm25_results, vector_results)
+
+    # Stub answer — replaced by LLM call in Feature 7.
+    answer = "[Retrieval stub] Top chunks retrieved:\n\n" + "\n\n".join(
+        f"[{c.heading}] {c.text}" for c in top_chunks
     )
+    citations = [Citation(heading=c.heading, snippet=c.text[:200]) for c in top_chunks]
+
+    return QueryResponse(answer=answer, citations=citations)
