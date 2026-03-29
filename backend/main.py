@@ -3,6 +3,7 @@ import uuid
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from chunker import chunk_by_sections
 from models import (
     IngestRequest,
     IngestResponse,
@@ -32,10 +33,9 @@ def health() -> dict:
 @app.post("/ingest", response_model=IngestResponse)
 def ingest(body: IngestRequest) -> IngestResponse:
     doc_id = str(uuid.uuid4())
-    store.save(doc_id, {"text": body.text, "sections": body.sections})
-    # Stub: chunk_count will reflect real chunking once Feature 4 is implemented.
-    chunk_count = max(1, len(body.text) // 500)
-    return IngestResponse(doc_id=doc_id, chunk_count=chunk_count)
+    chunks = chunk_by_sections(body.text, body.sections)
+    store.save(doc_id, {"text": body.text, "sections": body.sections, "chunks": chunks})
+    return IngestResponse(doc_id=doc_id, chunk_count=len(chunks))
 
 
 @app.post("/query", response_model=QueryResponse)
