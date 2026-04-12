@@ -116,27 +116,50 @@ function run() {
   const isTermsPage = detectTermsPage();
 
   if (!isTermsPage) {
-    chrome.runtime.sendMessage({ type: "TC_RESULT", payload: { isTermsPage: false } });
+    chrome.runtime.sendMessage({ type: "NOT_TC_PAGE" });
     return;
   }
 
   const content = extractMainContent();
   if (!content) {
-    chrome.runtime.sendMessage({ type: "TC_RESULT", payload: { isTermsPage: false } });
+    chrome.runtime.sendMessage({ type: "NOT_TC_PAGE" });
     return;
   }
 
   const sections = extractSections(content.bodyText, content.rootElement);
 
   chrome.runtime.sendMessage({
-    type: "TC_RESULT",
+    type: "TC_EXTRACTED",
     payload: {
-      isTermsPage: true,
       title: content.title,
-      bodyText: content.bodyText,
+      text: content.bodyText,
       sections,
     },
   });
 }
 
 run();
+
+// ---------------------------------------------------------------------------
+// Step 5 — Handle SCROLL_TO from the sidebar via background
+// ---------------------------------------------------------------------------
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === "SCROLL_TO") {
+    scrollToCharOffset(message.charOffset);
+    sendResponse({ ok: true });
+  }
+});
+
+function scrollToCharOffset(targetOffset) {
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+  let count = 0;
+  let node;
+  while ((node = walker.nextNode())) {
+    const len = node.textContent.length;
+    if (count + len > targetOffset) {
+      node.parentElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    count += len;
+  }
+}
