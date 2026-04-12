@@ -14,9 +14,22 @@ class IngestRequest(BaseModel):
     sections: List[Section]
 
 
+class RiskCitation(BaseModel):
+    heading: str
+    snippet: str
+
+
+class RiskEntry(BaseModel):
+    category: str
+    severity: str  # "🔴" | "🟡" | "🟢"
+    finding: str
+    citation: RiskCitation
+
+
 class IngestResponse(BaseModel):
     doc_id: str
     chunk_count: int
+    risk_report: List[RiskEntry] = []
 
 
 class QueryRequest(BaseModel):
@@ -27,6 +40,7 @@ class QueryRequest(BaseModel):
 class Citation(BaseModel):
     heading: str
     snippet: str
+    relevance_score: float = 0.0
 
 
 class QueryResponse(BaseModel):
